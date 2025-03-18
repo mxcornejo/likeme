@@ -43,6 +43,40 @@ app.post("/posts", async (req, res) => {
   }
 });
 
+// Ruta DELETE para eliminar un post por ID
+app.delete("/posts/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      "DELETE FROM posts WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Post no encontrado" });
+    }
+    res.json({ message: "Post eliminado correctamente", post: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar el post" });
+  }
+});
+
+// Ruta PUT para incrementar los likes de un post
+app.put("/posts/:id/like", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      "UPDATE posts SET likes = likes + 1 WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Post no encontrado" });
+    }
+    res.json({ message: "Like agregado", post: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: "Error al agregar el like" });
+  }
+});
+
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
